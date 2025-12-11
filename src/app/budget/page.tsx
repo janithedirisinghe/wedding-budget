@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useBudget } from "@/hooks/useBudget";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/ui/card";
@@ -17,9 +16,7 @@ export default function BudgetListPage() {
           <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Choose a plan to open</h1>
           <p className="text-sm text-slate-500">Manage multiple celebrations or planning scenarios.</p>
         </div>
-        <Button asChild>
-          <Link href="/budget/new">Create new budget</Link>
-        </Button>
+        <Button href="/budget/new">Create new budget</Button>
       </header>
       <div className="grid gap-6 md:grid-cols-2">
         {budgets.map((budget) => (
@@ -36,8 +33,8 @@ export default function BudgetListPage() {
               <span>{budget.categories.length} categories</span>
               <span>{budget.expenses.length} expenses logged</span>
             </div>
-            <Button asChild variant="secondary" className="w-full">
-              <Link href={`/budget/${budget.id}`}>Open budget</Link>
+            <Button href={`/budget/${budget.id}`} variant="secondary" className="w-full">
+              Open budget
             </Button>
           </Card>
         ))}

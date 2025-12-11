@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { forwardRef } from "react";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { Slot } from "@radix-ui/react-slot";
+import type { ButtonHTMLAttributes, ReactNode, HTMLAttributeAnchorTarget } from "react";
 import { cn } from "@/lib/utils";
 
 const baseStyles =
@@ -22,23 +22,16 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   loading?: boolean;
-  asChild?: boolean;
+  href?: string;
+  target?: HTMLAttributeAnchorTarget;
+  rel?: string;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    { className, variant = "primary", leftIcon, rightIcon, loading, children, disabled, asChild = false, ...props },
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : "button";
-
-    return (
-      <Comp
-        ref={ref}
-        className={cn(baseStyles, variants[variant], className, (disabled || loading) && "pointer-events-none opacity-60")}
-        {...(!asChild && { disabled: disabled || loading })}
-        {...props}
-      >
+  ({ className, variant = "primary", leftIcon, rightIcon, loading, children, disabled, href, target, rel, ...props }, ref) => {
+    const { onClick, type = "button", ...buttonProps } = props;
+    const content = (
+      <>
         {leftIcon}
         {loading ? (
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
@@ -46,7 +39,35 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           children
         )}
         {rightIcon}
-      </Comp>
+      </>
+    );
+
+    const classes = cn(
+      baseStyles,
+      variants[variant],
+      className,
+      (disabled || loading) && "pointer-events-none opacity-60",
+    );
+
+    if (href) {
+      return (
+        <Link href={href} className={classes} target={target} rel={rel} aria-disabled={disabled || loading}>
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        ref={ref}
+        className={classes}
+        disabled={disabled || loading}
+        onClick={onClick}
+        type={type}
+        {...buttonProps}
+      >
+        {content}
+      </button>
     );
   },
 );

@@ -8,7 +8,6 @@ import { Sidebar } from "@/components/Sidebar";
 import { useBudget } from "@/hooks/useBudget";
 import { currencyFormatter } from "@/lib/utils";
 import { Button } from "@/components/Button";
-import Link from "next/link";
 import { PiggyBank, Receipt, Sparkles, Wallet } from "lucide-react";
 
 export default function DashboardPage() {
@@ -64,9 +63,7 @@ export default function DashboardPage() {
             </h1>
             {budget ? <p className="text-sm text-slate-500">Active budget: {budget.name}</p> : null}
           </div>
-          <Button asChild>
-            <Link href="/budget/new">Create budget</Link>
-          </Button>
+          <Button href="/budget/new">Create budget</Button>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

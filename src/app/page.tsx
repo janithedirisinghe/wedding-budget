@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, Calendar, ChartNoAxesColumn, Palette } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/ui/card";
@@ -57,13 +56,11 @@ export default function LandingPage() {
             every promise to yourselves.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
-            <Button asChild>
-              <Link href="/register" className="flex items-center gap-2">
-                Begin your plan <ArrowRight className="h-4 w-4" />
-              </Link>
+            <Button href="/register">
+              Begin your plan <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="secondary" asChild>
-              <Link href="/dashboard">Explore dashboard</Link>
+            <Button variant="secondary" href="/dashboard">
+              Explore dashboard
             </Button>
           </div>
           <div className="mt-12 flex flex-wrap gap-8">
@@ -131,11 +128,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex flex-col gap-4">
-            <Button asChild>
-              <Link href="/register">Get started free</Link>
-            </Button>
-            <Button variant="secondary" asChild>
-              <Link href="/login">I already have an account</Link>
+            <Button href="/register">Get started free</Button>
+            <Button variant="secondary" href="/login">
+              I already have an account
             </Button>
           </div>
         </Card>
