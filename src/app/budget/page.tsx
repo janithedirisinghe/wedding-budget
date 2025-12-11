@@ -1,0 +1,48 @@
+"use client";
+
+import Link from "next/link";
+import { useBudget } from "@/hooks/useBudget";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/ui/card";
+import { currencyFormatter, formatDate } from "@/lib/utils";
+
+export default function BudgetListPage() {
+  const { budgets } = useBudget();
+
+  return (
+    <div className="space-y-10">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="section-heading">Your budgets</p>
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Choose a plan to open</h1>
+          <p className="text-sm text-slate-500">Manage multiple celebrations or planning scenarios.</p>
+        </div>
+        <Button asChild>
+          <Link href="/budget/new">Create new budget</Link>
+        </Button>
+      </header>
+      <div className="grid gap-6 md:grid-cols-2">
+        {budgets.map((budget) => (
+          <Card key={budget.id} className="space-y-4 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.4em] text-amber-600">{formatDate(budget.eventDate)}</p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{budget.name}</h3>
+                <p className="text-sm text-slate-500">{budget.coupleNames}</p>
+              </div>
+              <span className="text-xl font-semibold text-rose-500">{currencyFormatter(budget.total)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-slate-500">
+              <span>{budget.categories.length} categories</span>
+              <span>{budget.expenses.length} expenses logged</span>
+            </div>
+            <Button asChild variant="secondary" className="w-full">
+              <Link href={`/budget/${budget.id}`}>Open budget</Link>
+            </Button>
+          </Card>
+        ))}
+        {budgets.length === 0 ? <p className="text-slate-500">No budgets yet.</p> : null}
+      </div>
+    </div>
+  );
+}

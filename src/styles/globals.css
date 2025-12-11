@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --wedding-blush: #f9dfe5;
+  --wedding-rose: #f4b9c4;
+  --wedding-gold: #c58f65;
+  --wedding-deep-gold: #8b5e34;
+  --wedding-ink: #1f2933;
+  color-scheme: light;
+}
+
+:root[class~="dark"] {
+  --wedding-blush: #2a1f24;
+  --wedding-rose: #a05c70;
+  --wedding-gold: #f0c6a1;
+  --wedding-deep-gold: #f7e5d0;
+  --wedding-ink: #fdf5ef;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, rgba(249, 223, 229, 0.6), transparent 60%),
+    linear-gradient(180deg, #fff9f7 0%, #fef6f3 40%, #f5ebe6 100%);
+  color: var(--wedding-ink);
+}
+
+.dark body {
+  background: radial-gradient(circle at top, rgba(65, 35, 44, 0.7), transparent 60%),
+    linear-gradient(180deg, #1a1518 0%, #1e1619 40%, #100a0f 100%);
+}
+
+.glass-panel {
+  @apply rounded-3xl border border-white/40 bg-white/70 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40;
+}
+
+.section-heading {
+  @apply text-sm uppercase tracking-[0.4em] text-amber-600 dark:text-amber-300;
+}
+
+.hero-title {
+  @apply text-4xl font-semibold text-slate-900 sm:text-5xl lg:text-6xl dark:text-white;
+}
+
+.hero-subtitle {
+  @apply mt-4 text-lg text-slate-600 sm:max-w-3xl dark:text-slate-200;
+}
+
+.btn-gradient {
+  @apply bg-gradient-to-r from-rose-500 via-rose-400 to-amber-400 text-white shadow-lg shadow-rose-200/70 hover:shadow-rose-300/70 dark:from-rose-400 dark:via-amber-400 dark:to-yellow-300;
+}
+
+.card-grid {
+  @apply grid gap-6 md:grid-cols-2 xl:grid-cols-4;
+}
+
+::-webkit-scrollbar {
+  width: 0.6rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--wedding-rose), var(--wedding-gold));
+  border-radius: 999px;
+}
