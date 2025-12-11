@@ -1,4 +1,5 @@
 import { ArrowRight, Calendar, ChartNoAxesColumn, Palette } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -44,8 +45,10 @@ const steps = [
 
 export default function LandingPage() {
   return (
-    <div className="space-y-24 pb-16">
-      <section className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="min-h-screen bg-gradient-to-b from-white via-rose-50/70 to-rose-100/40 dark:from-slate-950 dark:via-slate-950/70 dark:to-black">
+      <Navbar />
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-24 px-4 pb-20 pt-32 sm:px-6 lg:px-8">
+        <section className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
           <p className="section-heading">Wedding finances, reimagined</p>
           <h1 className="hero-title font-[var(--font-playfair)]">
@@ -97,9 +100,9 @@ export default function LandingPage() {
             </div>
           </div>
         </Card>
-      </section>
+        </section>
 
-      <section>
+        <section>
         <SectionHeading
           eyebrow="How it flows"
           title="Simple, guided steps"
@@ -116,9 +119,9 @@ export default function LandingPage() {
             </Card>
           ))}
         </div>
-      </section>
+        </section>
 
-      <section>
+        <section>
         <Card className="flex flex-col gap-8 p-10 text-center md:flex-row md:items-center md:text-left">
           <div className="flex-1 space-y-4">
             <p className="section-heading">Ready when you are</p>
@@ -134,7 +137,8 @@ export default function LandingPage() {
             </Button>
           </div>
         </Card>
-      </section>
+        </section>
+      </main>
     </div>
   );
 }

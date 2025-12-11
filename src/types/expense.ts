@@ -4,6 +4,7 @@ export interface Expense {
   categoryId: string;
   name: string;
   amount: number;
+  projected?: number;
   date: string;
   note?: string;
 }

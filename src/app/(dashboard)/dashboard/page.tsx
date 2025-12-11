@@ -1,10 +1,9 @@
 "use client";
 
-import { BudgetChart } from "@/app/dashboard/components/BudgetChart";
-import { CategoryList } from "@/app/dashboard/components/CategoryList";
-import { ExpenseTable } from "@/app/dashboard/components/ExpenseTable";
-import { OverviewCard } from "@/app/dashboard/components/OverviewCard";
-import { Sidebar } from "@/components/Sidebar";
+import { BudgetChart } from "@/app/(dashboard)/dashboard/components/BudgetChart";
+import { CategoryList } from "@/app/(dashboard)/dashboard/components/CategoryList";
+import { ExpenseTable } from "@/app/(dashboard)/dashboard/components/ExpenseTable";
+import { OverviewCard } from "@/app/(dashboard)/dashboard/components/OverviewCard";
 import { useBudget } from "@/hooks/useBudget";
 import { currencyFormatter } from "@/lib/utils";
 import { Button } from "@/components/Button";
@@ -53,7 +52,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex gap-10">
-      <Sidebar />
+      {/* <Sidebar /> */}
       <div className="flex-1 space-y-12">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>

@@ -26,7 +26,7 @@ interface BudgetStore {
   addCategory: (budgetId: string, category: Pick<Category, "name" | "allocated">) => void;
   addExpense: (
     budgetId: string,
-    expense: Pick<Expense, "categoryId" | "name" | "amount" | "date" | "note">
+    expense: Pick<Expense, "categoryId" | "name" | "amount" | "date" | "projected" | "note">
   ) => void;
   removeExpense: (budgetId: string, expenseId: string) => void;
 }
@@ -72,6 +72,7 @@ const seedBudget: Budget = {
       categoryId: "cat-venue",
       name: "Venue Deposit",
       amount: 10000,
+      projected: 12000,
       date: new Date().toISOString(),
     },
     {
@@ -80,6 +81,7 @@ const seedBudget: Budget = {
       categoryId: "cat-catering",
       name: "Menu Tasting",
       amount: 1200,
+      projected: 1500,
       date: new Date().toISOString(),
     },
   ],

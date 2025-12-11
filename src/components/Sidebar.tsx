@@ -19,7 +19,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="sticky top-24 hidden h-[calc(100vh-7rem)] w-64 flex-col rounded-3xl border border-white/30 bg-white/70 p-6 shadow-lg shadow-rose-100/50 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/50 lg:flex">
+    <aside className="flex w-full flex-col rounded-3xl border border-white/30 bg-white/80 p-6 shadow-lg shadow-rose-100/50 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60 lg:sticky lg:top-10 lg:h-[calc(100vh-5rem)] lg:w-64">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.4em] text-amber-600 dark:text-amber-300">Navigate</p>
         <button
