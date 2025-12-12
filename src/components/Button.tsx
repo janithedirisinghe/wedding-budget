@@ -6,7 +6,13 @@ import type { ButtonHTMLAttributes, ReactNode, HTMLAttributeAnchorTarget } from 
 import { cn } from "@/lib/utils";
 
 const baseStyles =
-  "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+
+const sizes: Record<string, string> = {
+  sm: "px-4 py-2 text-xs",
+  md: "px-6 py-3 text-sm",
+  lg: "px-8 py-4 text-base",
+};
 
 const variants: Record<string, string> = {
   primary: "btn-gradient text-white focus-visible:outline-rose-500",
@@ -19,6 +25,7 @@ const variants: Record<string, string> = {
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof variants;
+  size?: keyof typeof sizes;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   loading?: boolean;
@@ -28,7 +35,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", leftIcon, rightIcon, loading, children, disabled, href, target, rel, ...props }, ref) => {
+  (
+    { className, variant = "primary", size = "md", leftIcon, rightIcon, loading, children, disabled, href, target, rel, ...props },
+    ref,
+  ) => {
     const { onClick, type = "button", ...buttonProps } = props;
     const content = (
       <>
@@ -44,6 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const classes = cn(
       baseStyles,
+      sizes[size],
       variants[variant],
       className,
       (disabled || loading) && "pointer-events-none opacity-60",
