@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CreditCard, Home, ListChecks, Settings } from "lucide-react";
+import { CheckSquare, Clock, CreditCard, Home, ListChecks, Settings } from "lucide-react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { href: "/dashboard", icon: Home, label: "Overview" },
   { href: "/budget", icon: CreditCard, label: "Budgets" },
+  { href: "/checklist", icon: CheckSquare, label: "Checklist" },
+  { href: "/timeline", icon: Clock, label: "Timeline" },
   { href: "/budget/new", icon: ListChecks, label: "New Budget" },
   { href: "/profile", icon: Settings, label: "Profile" },
 ];

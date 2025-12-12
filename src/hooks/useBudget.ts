@@ -14,6 +14,10 @@ export const useBudget = (budgetId?: string) => {
     addCategory,
     addExpense,
     removeExpense,
+    addChecklistCategory,
+    addChecklistItem,
+    toggleChecklistItem,
+    addTimelineEvent,
   } = useBudgetStore();
 
   const budget = useMemo(() => {
@@ -49,5 +53,9 @@ export const useBudget = (budgetId?: string) => {
     addCategory,
     addExpense,
     removeExpense,
+    addChecklistCategory,
+    addChecklistItem,
+    toggleChecklistItem,
+    addTimelineEvent,
   };
 };

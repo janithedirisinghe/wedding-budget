@@ -1,5 +1,7 @@
 import type { Category } from "./category";
+import type { ChecklistCategory } from "./checklist";
 import type { Expense } from "./expense";
+import type { TimelineEvent } from "./timeline";
 
 export interface Budget {
   id: string;
@@ -9,6 +11,8 @@ export interface Budget {
   total: number;
   categories: Category[];
   expenses: Expense[];
+  checklist: ChecklistCategory[];
+  timeline: TimelineEvent[];
   createdAt: string;
   notes?: string;
 }

@@ -4,7 +4,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Budget } from "@/types/budget";
 import type { Category } from "@/types/category";
+import type { ChecklistCategory } from "@/types/checklist";
 import type { Expense } from "@/types/expense";
+import type { TimelineEvent } from "@/types/timeline";
 import { generateId } from "@/lib/utils";
 
 interface BudgetInput {
@@ -14,6 +16,7 @@ interface BudgetInput {
   total: number;
   categories?: Array<Pick<Category, "name" | "allocated">>;
   notes?: string;
+  timeline?: Array<Pick<TimelineEvent, "name" | "date" | "time">>;
 }
 
 interface BudgetStore {
@@ -29,6 +32,10 @@ interface BudgetStore {
     expense: Pick<Expense, "categoryId" | "name" | "amount" | "date" | "projected" | "note">
   ) => void;
   removeExpense: (budgetId: string, expenseId: string) => void;
+  addChecklistCategory: (budgetId: string, name: string) => void;
+  addChecklistItem: (budgetId: string, categoryId: string, name: string) => void;
+  toggleChecklistItem: (budgetId: string, itemId: string) => void;
+  addTimelineEvent: (budgetId: string, payload: Pick<TimelineEvent, "name" | "date" | "time" | "note">) => void;
 }
 
 const seedBudget: Budget = {
@@ -85,6 +92,62 @@ const seedBudget: Budget = {
       date: new Date().toISOString(),
     },
   ],
+  checklist: [
+    {
+      id: "chk-ceremony",
+      budgetId: "demo-budget",
+      name: "Ceremony",
+      items: [
+        {
+          id: "chk-item-1",
+          budgetId: "demo-budget",
+          categoryId: "chk-ceremony",
+          name: "Book officiant",
+          lastUpdated: new Date().toISOString(),
+          completed: true,
+        },
+        {
+          id: "chk-item-2",
+          budgetId: "demo-budget",
+          categoryId: "chk-ceremony",
+          name: "Design vows",
+          lastUpdated: new Date().toISOString(),
+          completed: false,
+        },
+      ],
+    },
+    {
+      id: "chk-reception",
+      budgetId: "demo-budget",
+      name: "Reception",
+      items: [
+        {
+          id: "chk-item-3",
+          budgetId: "demo-budget",
+          categoryId: "chk-reception",
+          name: "Confirm caterer menu",
+          lastUpdated: new Date().toISOString(),
+          completed: false,
+        },
+      ],
+    },
+  ],
+  timeline: [
+    {
+      id: "timeline-1",
+      budgetId: "demo-budget",
+      name: "Welcome drinks",
+      date: new Date().toISOString(),
+      time: "15:00",
+    },
+    {
+      id: "timeline-2",
+      budgetId: "demo-budget",
+      name: "Ceremony",
+      date: new Date().toISOString(),
+      time: "17:00",
+    },
+  ],
 };
 
 export const useBudgetStore = create<BudgetStore>()(
@@ -110,10 +173,23 @@ export const useBudgetStore = create<BudgetStore>()(
               spent: 0,
             })) ?? [],
           expenses: [],
+          checklist: [],
+          timeline:
+            input.timeline?.map((event) => ({
+              id: generateId(),
+              budgetId: "temp", // replaced below
+              name: event.name,
+              date: event.date,
+              time: event.time,
+            })) ?? [],
         };
 
         newBudget.categories = newBudget.categories.map((category) => ({
           ...category,
+          budgetId: newBudget.id,
+        }));
+        newBudget.timeline = newBudget.timeline.map((event) => ({
+          ...event,
           budgetId: newBudget.id,
         }));
 
@@ -201,6 +277,97 @@ export const useBudgetStore = create<BudgetStore>()(
                 : budget.categories,
             };
           }),
+        }));
+      },
+      addChecklistCategory: (budgetId, name) => {
+        set((state) => ({
+          budgets: state.budgets.map((budget) =>
+            budget.id === budgetId
+              ? {
+                  ...budget,
+                  checklist: [
+                    ...budget.checklist,
+                    {
+                      id: generateId(),
+                      budgetId,
+                      name,
+                      items: [],
+                    } satisfies ChecklistCategory,
+                  ],
+                }
+              : budget,
+          ),
+        }));
+      },
+      addChecklistItem: (budgetId, categoryId, name) => {
+        const timestamp = new Date().toISOString();
+        set((state) => ({
+          budgets: state.budgets.map((budget) => {
+            if (budget.id !== budgetId) return budget;
+            return {
+              ...budget,
+              checklist: budget.checklist.map((category) =>
+                category.id === categoryId
+                  ? {
+                      ...category,
+                      items: [
+                        ...category.items,
+                        {
+                          id: generateId(),
+                          budgetId,
+                          categoryId,
+                          name,
+                          lastUpdated: timestamp,
+                          completed: false,
+                        },
+                      ],
+                    }
+                  : category,
+              ),
+            };
+          }),
+        }));
+      },
+      toggleChecklistItem: (budgetId, itemId) => {
+        const timestamp = new Date().toISOString();
+        set((state) => ({
+          budgets: state.budgets.map((budget) => {
+            if (budget.id !== budgetId) return budget;
+            return {
+              ...budget,
+              checklist: budget.checklist.map((category) => ({
+                ...category,
+                items: category.items.map((item) =>
+                  item.id === itemId
+                    ? {
+                        ...item,
+                        completed: !item.completed,
+                        lastUpdated: timestamp,
+                      }
+                    : item,
+                ),
+              })),
+            };
+          }),
+        }));
+      },
+      addTimelineEvent: (budgetId, payload) => {
+        set((state) => ({
+          budgets: state.budgets.map((budget) =>
+            budget.id === budgetId
+              ? {
+                  ...budget,
+                  timeline: [
+                    ...budget.timeline,
+                    {
+                      id: generateId(),
+                      budgetId,
+                      ...payload,
+                    },
+                  ],
+                }
+              : budget,
+          ),
         }));
       },
     }),
