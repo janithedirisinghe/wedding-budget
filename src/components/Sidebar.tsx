@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { CheckSquare, Clock, CreditCard, Home, ListChecks, Settings } from "lucide-react";
+import { CheckSquare, Clock, CreditCard, Home, Settings } from "lucide-react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 
@@ -12,28 +11,18 @@ const menuItems = [
   { href: "/budget", icon: CreditCard, label: "Budgets" },
   { href: "/checklist", icon: CheckSquare, label: "Checklist" },
   { href: "/timeline", icon: Clock, label: "Timeline" },
-  // { href: "/budget/new", icon: ListChecks, label: "New Budget" },
   { href: "/profile", icon: Settings, label: "Profile" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="flex w-full flex-col rounded-3xl border border-white/30 bg-white/80 p-6 shadow-lg shadow-rose-100/50 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60 lg:sticky lg:top-10 lg:h-[calc(100vh-5rem)] lg:w-64">
+    <aside className="flex w-full flex-col rounded-3xl border border-white/30 bg-white/80 p-6 shadow-lg shadow-rose-100/50 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60 lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] lg:w-64">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.4em] text-amber-600 dark:text-amber-300">Navigate</p>
-        <button
-          type="button"
-          className="text-xs font-semibold text-rose-400"
-          onClick={() => setCollapsed((prev) => !prev)}
-        >
-          {collapsed ? "Expand" : "Collapse"}
-        </button>
       </div>
-      <div className={cn("mt-6 flex flex-col gap-2 transition-all", collapsed && "-mx-3 text-center")}
-      >
+      <div className="mt-6 flex flex-col gap-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = pathname?.startsWith(item.href);
@@ -42,13 +31,12 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-rose-500 dark:text-slate-200",
+                "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-rose-500 dark:text-slate-200 dark:hover:bg-slate-800",
                 active && "bg-white text-rose-500 shadow-sm dark:bg-slate-800",
-                collapsed && "justify-center px-3",
               )}
             >
               <Icon className="h-4 w-4" />
-              {!collapsed && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </Link>
           );
         })}
