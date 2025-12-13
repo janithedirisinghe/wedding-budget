@@ -5,12 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const currencyFormatter = (value: number, currency: string = "USD") =>
+export const currencyFormatter = (value: number | string, currency: string = "USD") =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(typeof value === "string" ? Number(value) : value);
 
 export const percentFormatter = (value: number) =>
   new Intl.NumberFormat("en-US", {

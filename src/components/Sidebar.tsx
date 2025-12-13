@@ -12,7 +12,7 @@ const menuItems = [
   { href: "/budget", icon: CreditCard, label: "Budgets" },
   { href: "/checklist", icon: CheckSquare, label: "Checklist" },
   { href: "/timeline", icon: Clock, label: "Timeline" },
-//   { href: "/budget/new", icon: ListChecks, label: "New Budget" },
+  { href: "/budget/new", icon: ListChecks, label: "New Budget" },
   { href: "/profile", icon: Settings, label: "Profile" },
 ];
 

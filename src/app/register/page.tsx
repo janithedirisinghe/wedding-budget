@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { isAxiosError } from "axios";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { api } from "@/lib/axios";
@@ -26,6 +28,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -37,11 +40,21 @@ export default function RegisterPage() {
   const onSubmit = async (values: RegisterValues) => {
     setServerMessage(null);
     try {
-      await api.post("/auth/register", values);
-      setServerMessage("Account created. Check your inbox to verify your email.");
+      await api.post("/auth/register", {
+        fullName: values.fullName,
+        partnerName: values.partnerName,
+        email: values.email,
+        password: values.password,
+      });
+      setServerMessage("Account created. Redirecting you to your dashboard…");
+      router.replace("/dashboard");
+      router.refresh();
     } catch (error) {
-      console.error(error);
-      setServerMessage("We could not create your account. Please try again.");
+      if (isAxiosError(error)) {
+        setServerMessage(error.response?.data?.message ?? "We could not create your account. Please try again.");
+      } else {
+        setServerMessage("We could not create your account. Please try again.");
+      }
     }
   };
 

@@ -27,8 +27,8 @@ export default function CreateBudgetPage() {
     formState: { errors, isSubmitting },
   } = useForm<NewBudgetValues>({ resolver: zodResolver(newBudgetSchema) });
 
-  const onSubmit = (values: NewBudgetValues) => {
-    const budget = createBudget(values);
+  const onSubmit = async (values: NewBudgetValues) => {
+    const budget = await createBudget(values);
     router.push(`/budget/${budget.id}`);
   };
 

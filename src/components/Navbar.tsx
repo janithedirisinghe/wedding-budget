@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Heart, Menu, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/axios";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -17,7 +18,34 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [sessionUser, setSessionUser] = useState<{ fullName?: string | null } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        if (!active) return;
+        setSessionUser(data.user);
+      } catch {
+        if (!active) return;
+        setSessionUser(null);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
+    setSessionUser(null);
+    router.replace("/login");
+    router.refresh();
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-white/30 bg-white/80 backdrop-blur-xl dark:border-white/5 dark:bg-slate-950/70">
@@ -47,10 +75,26 @@ export function Navbar() {
         </div>
         <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
-          <Button variant="ghost" href="/login">
-            Log in
-          </Button>
-          <Button href="/register">Create Account</Button>
+          {sessionUser ? (
+            <>
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-200">
+                Hi, {sessionUser.fullName?.split(" ")[0] ?? "friend"}
+              </span>
+              <Button variant="ghost" href="/dashboard">
+                Dashboard
+              </Button>
+              <Button type="button" variant="secondary" onClick={handleLogout}>
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" href="/login">
+                Log in
+              </Button>
+              <Button href="/register">Create Account</Button>
+            </>
+          )}
         </div>
         <button
           type="button"
@@ -77,10 +121,23 @@ export function Navbar() {
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-3">
-              <Button variant="ghost" href="/login">
-                Log in
-              </Button>
-              <Button href="/register">Create Account</Button>
+              {sessionUser ? (
+                <>
+                  <Button variant="ghost" href="/dashboard">
+                    Dashboard
+                  </Button>
+                  <Button type="button" onClick={handleLogout}>
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" href="/login">
+                    Log in
+                  </Button>
+                  <Button href="/register">Create Account</Button>
+                </>
+              )}
             </div>
           </div>
         </div>

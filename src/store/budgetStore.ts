@@ -252,7 +252,7 @@ export const useBudgetStore = create<BudgetStore>()(
                   ],
                   categories: budget.categories.map((category) =>
                     category.id === expense.categoryId
-                      ? { ...category, spent: category.spent + expense.amount }
+                      ? { ...category, spent: Number(category.spent) + Number(expense.amount) }
                       : category,
                   ),
                 }
@@ -271,7 +271,7 @@ export const useBudgetStore = create<BudgetStore>()(
               categories: expense
                 ? budget.categories.map((category) =>
                     category.id === expense.categoryId
-                      ? { ...category, spent: Math.max(0, category.spent - expense.amount) }
+                      ? { ...category, spent: Math.max(0, Number(category.spent) - Number(expense.amount)) }
                       : category,
                   )
                 : budget.categories,

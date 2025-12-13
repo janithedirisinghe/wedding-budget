@@ -6,13 +6,21 @@ import { Input } from "@/components/Input";
 import { useBudget } from "@/hooks/useBudget";
 
 export default function TimelinePage() {
-  const { budget, addTimelineEvent } = useBudget();
+  const { budget, addTimelineEvent, loading } = useBudget();
   const [form, setForm] = useState({ name: "", date: "", time: "", note: "" });
   const events = [...(budget?.timeline ?? [])].sort((a, b) => {
     const dateComparison = new Date(a.date).getTime() - new Date(b.date).getTime();
     if (dateComparison !== 0) return dateComparison;
     return a.time.localeCompare(b.time);
   });
+
+  if (loading)
+    return (
+      <div className="rounded-3xl border border-white/30 bg-white/70 p-10 text-center shadow-sm dark:border-white/10 dark:bg-slate-900/30">
+        <p className="section-heading">Loading timeline</p>
+        <p className="text-lg text-slate-600 dark:text-slate-200">Gathering your schedule…</p>
+      </div>
+    );
 
   if (!budget)
     return (
@@ -22,9 +30,9 @@ export default function TimelinePage() {
       </div>
     );
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!form.name.trim() || !form.date || !form.time) return;
-    addTimelineEvent(budget.id, {
+    await addTimelineEvent(budget.id, {
       name: form.name.trim(),
       date: form.date,
       time: form.time,

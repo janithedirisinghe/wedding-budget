@@ -8,7 +8,7 @@ export interface Budget {
   name: string;
   coupleNames: string;
   eventDate: string;
-  total: number;
+  total: number | string;
   categories: Category[];
   expenses: Expense[];
   checklist: ChecklistCategory[];

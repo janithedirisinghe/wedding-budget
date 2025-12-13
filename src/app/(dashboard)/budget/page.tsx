@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { currencyFormatter, formatDate } from "@/lib/utils";
 
 export default function BudgetListPage() {
-  const { budgets } = useBudget();
+  const { budgets, loading } = useBudget();
 
   return (
     <div className="space-y-10">
@@ -19,7 +19,11 @@ export default function BudgetListPage() {
         <Button href="/budget/new">Create new budget</Button>
       </header>
       <div className="grid gap-6 md:grid-cols-2">
-        {budgets.map((budget) => (
+        {loading ? (
+          <p className="text-sm text-slate-500">Loading your budgets…</p>
+        ) : null}
+        {!loading &&
+          budgets.map((budget) => (
           <Card key={budget.id} className="space-y-4 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -38,7 +42,7 @@ export default function BudgetListPage() {
             </Button>
           </Card>
         ))}
-        {budgets.length === 0 ? <p className="text-slate-500">No budgets yet.</p> : null}
+        {!loading && budgets.length === 0 ? <p className="text-slate-500">No budgets yet.</p> : null}
       </div>
     </div>
   );

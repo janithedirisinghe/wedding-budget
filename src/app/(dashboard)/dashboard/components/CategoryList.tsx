@@ -16,13 +16,15 @@ export function CategoryList({ categories }: CategoryListProps) {
       </div>
       <div className="mt-6 space-y-5">
         {categories.map((category) => {
-          const pct = Math.min(100, Math.round((category.spent / category.allocated) * 100));
+          const spent = Number(category.spent);
+          const allocated = Number(category.allocated) || 1;
+          const pct = Math.min(100, Math.round((spent / allocated) * 100));
           return (
             <div key={category.id}>
               <div className="flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-200">
                 <span>{category.name}</span>
                 <span>
-                  {currencyFormatter(category.spent)} / {currencyFormatter(category.allocated)}
+                  {currencyFormatter(spent)} / {currencyFormatter(allocated)}
                 </span>
               </div>
               <div className="mt-2 h-3 rounded-full bg-rose-100/70 dark:bg-white/10">

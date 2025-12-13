@@ -1,11 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { api } from "@/lib/axios";
 
 export default function ProfilePage() {
   const [message, setMessage] = useState<string | null>(null);
+  const [profile, setProfile] = useState({ fullName: "", partnerName: "", email: "" });
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        if (!active) return;
+        setProfile({
+          fullName: data.user.fullName ?? "",
+          partnerName: data.user.partnerName ?? "",
+          email: data.user.email ?? "",
+        });
+      } catch {
+        if (!active) return;
+        setMessage("Unable to load your profile right now.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
+    router.replace("/login");
+    router.refresh();
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
@@ -21,10 +56,20 @@ export default function ProfilePage() {
             <p className="text-sm text-slate-500">Only your partner and collaborators can see this info.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
-            <Input label="Full name" defaultValue="Avery Parker" />
-            <Input label="Partner name" defaultValue="Morgan Hale" />
+            <Input
+              label="Full name"
+              value={profile.fullName}
+              disabled={loading}
+              onChange={(event) => setProfile((prev) => ({ ...prev, fullName: event.target.value }))}
+            />
+            <Input
+              label="Partner name"
+              value={profile.partnerName}
+              disabled={loading}
+              onChange={(event) => setProfile((prev) => ({ ...prev, partnerName: event.target.value }))}
+            />
           </div>
-          <Input label="Email" type="email" defaultValue="avery@serenite.com" />
+          <Input label="Email" type="email" value={profile.email} disabled readOnly />
         </section>
         <section className="space-y-6">
           <div>
@@ -40,14 +85,20 @@ export default function ProfilePage() {
             Notify me for planner comments
           </label>
         </section>
-        <Button
-          onClick={() => {
-            setMessage("Profile updated");
-            setTimeout(() => setMessage(null), 2500);
-          }}
-        >
+        <div className="flex flex-wrap gap-3">
+          <Button
+            disabled={loading}
+            onClick={() => {
+              setMessage("Profile updated (coming soon)");
+              setTimeout(() => setMessage(null), 2500);
+            }}
+          >
           Save changes
-        </Button>
+          </Button>
+          <Button type="button" variant="ghost" onClick={handleLogout}>
+            Log out
+          </Button>
+        </div>
         {message ? <p className="text-sm text-emerald-500">{message}</p> : null}
       </div>
     </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { isAxiosError } from "axios";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { api } from "@/lib/axios";
@@ -18,6 +20,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -28,9 +31,14 @@ export default function LoginPage() {
     setError(null);
     try {
       await api.post("/auth/login", values);
+      router.replace("/dashboard");
+      router.refresh();
     } catch (err) {
-      console.error(err);
-      setError("Login failed. Double-check your credentials.");
+      if (isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Login failed. Double-check your credentials.");
+      } else {
+        setError("Login failed. Double-check your credentials.");
+      }
     }
   };
 

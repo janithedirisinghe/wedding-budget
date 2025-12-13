@@ -2,7 +2,7 @@ export interface Category {
   id: string;
   budgetId: string;
   name: string;
-  allocated: number;
-  spent: number;
+  allocated: number | string;
+  spent: number | string;
   color?: string;
 }

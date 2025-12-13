@@ -8,10 +8,18 @@ import { useBudget } from "@/hooks/useBudget";
 import { formatDate } from "@/lib/utils";
 
 export default function ChecklistPage() {
-  const { budget, addChecklistCategory, addChecklistItem, toggleChecklistItem } = useBudget();
+  const { budget, addChecklistCategory, addChecklistItem, toggleChecklistItem, loading } = useBudget();
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  if (loading)
+    return (
+      <div className="rounded-3xl border border-white/30 bg-white/70 p-10 text-center shadow-sm dark:border-white/10 dark:bg-slate-900/30">
+        <p className="section-heading">Loading checklist</p>
+        <p className="text-lg text-slate-600 dark:text-slate-200">Fetching your latest tasks…</p>
+      </div>
+    );
 
   if (!budget)
     return (
@@ -23,17 +31,17 @@ export default function ChecklistPage() {
 
   const checklist = budget.checklist ?? [];
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!categoryName.trim()) return;
-    addChecklistCategory(budget.id, categoryName.trim());
+    await addChecklistCategory(budget.id, { name: categoryName.trim() });
     setCategoryName("");
     setCategoryModal(false);
   };
 
-  const handleAddItem = (categoryId: string) => {
+  const handleAddItem = async (categoryId: string) => {
     const value = drafts[categoryId]?.trim();
     if (!value) return;
-    addChecklistItem(budget.id, categoryId, value);
+    await addChecklistItem(budget.id, { categoryId, name: value });
     setDrafts((prev) => ({
       ...prev,
       [categoryId]: "",
@@ -97,7 +105,7 @@ export default function ChecklistPage() {
                         category.items.map((item) => (
                           <tr key={item.id} className="text-slate-700 dark:text-slate-200">
                             <td className="py-3 font-semibold">{item.name}</td>
-                            <td className="py-3 text-slate-500">{formatDate(item.lastUpdated)}</td>
+                            <td className="py-3 text-slate-500">{formatDate(item.lastUpdated ?? new Date().toISOString())}</td>
                             <td className="py-3">
                               <label className="flex items-center justify-end gap-2 text-sm">
                                 <input

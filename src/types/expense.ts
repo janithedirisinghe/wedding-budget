@@ -3,8 +3,8 @@ export interface Expense {
   budgetId: string;
   categoryId: string;
   name: string;
-  amount: number;
-  projected?: number;
+  amount: number | string;
+  projected?: number | string;
   date: string;
   note?: string;
 }

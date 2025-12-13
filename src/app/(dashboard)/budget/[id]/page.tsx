@@ -14,11 +14,19 @@ const emptyDraft: Draft = { name: "", projected: "", actual: "", date: "" };
 
 export default function BudgetDetailPage() {
   const params = useParams<{ id: string }>();
-  const { budget, addCategory, addExpense } = useBudget(params?.id);
+  const { budget, addCategory, addExpense, loading } = useBudget(params?.id);
 
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryForm, setCategoryForm] = useState({ name: "", allocated: "" });
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+
+  if (loading)
+    return (
+      <div className="rounded-3xl border border-white/30 bg-white/70 p-10 text-center shadow-sm dark:border-white/10 dark:bg-slate-900/30">
+        <p className="section-heading">Loading budget</p>
+        <p className="text-lg text-slate-600 dark:text-slate-200">Fetching the latest numbers…</p>
+      </div>
+    );
 
   if (!budget)
     return (
@@ -30,11 +38,11 @@ export default function BudgetDetailPage() {
       </div>
     );
 
-  const totalSpent = budget.categories.reduce((sum, category) => sum + category.spent, 0);
-  const progress = budget.total ? Math.min(100, Math.round((totalSpent / budget.total) * 100)) : 0;
+  const totalSpent = budget.categories.reduce((sum, category) => sum + Number(category.spent), 0);
+  const progress = budget.total ? Math.min(100, Math.round((totalSpent / Number(budget.total)) * 100)) : 0;
 
-  const handleAddCategory = () => {
-    addCategory(budget.id, {
+  const handleAddCategory = async () => {
+    await addCategory(budget.id, {
       name: categoryForm.name,
       allocated: Number(categoryForm.allocated),
     });
@@ -54,14 +62,14 @@ export default function BudgetDetailPage() {
     }));
   };
 
-  const handleAddExpense = (categoryId: string) => {
+  const handleAddExpense = async (categoryId: string) => {
     const draft = getDraft(categoryId);
     if (!draft.name || !draft.actual) {
       alert("Please provide an item name and actual amount.");
       return;
     }
 
-    addExpense(budget.id, {
+    await addExpense(budget.id, {
       categoryId,
       name: draft.name,
       amount: Number(draft.actual),

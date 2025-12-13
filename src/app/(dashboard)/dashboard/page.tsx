@@ -14,8 +14,8 @@ export default function DashboardPage() {
 
   const chartData = budget?.categories.map((category) => ({
     name: category.name,
-    allocated: category.allocated,
-    spent: category.spent,
+    allocated: Number(category.allocated),
+    spent: Number(category.spent),
   })) ?? [];
 
   const expenses = budget?.expenses.map((expense) => ({
