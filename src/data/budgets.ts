@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { syncBudgetDefaults } from "@/lib/defaults";
 
 const budgetInclude = {
   categories: true,
@@ -38,7 +39,7 @@ interface CreateBudgetInput {
 }
 
 export async function createBudget(input: CreateBudgetInput) {
-  return prisma.budget.create({
+  const created = await prisma.budget.create({
     data: {
       userId: input.userId,
       name: input.name,
@@ -64,6 +65,11 @@ export async function createBudget(input: CreateBudgetInput) {
     },
     include: budgetInclude,
   });
+
+  await syncBudgetDefaults(created.id);
+
+  const refreshed = await prisma.budget.findUnique({ where: { id: created.id }, include: budgetInclude });
+  return refreshed!;
 }
 
 export async function addCategory(budgetId: string, name: string, allocated: number, color?: string) {

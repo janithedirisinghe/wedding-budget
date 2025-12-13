@@ -41,16 +41,27 @@ export function clearAuthCookie(response: NextResponse) {
   });
 }
 
-export async function getCurrentUserId(): Promise<string | null> {
+export type SessionUser = { id: string; role: UserRole };
+
+export async function getCurrentSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
   if (!token) return null;
   try {
     const payload = await verifyAuthToken(token);
-    return typeof payload.sub === "string" ? payload.sub : null;
+    if (typeof payload.sub !== "string") return null;
+    return {
+      id: payload.sub,
+      role: (payload.role as UserRole) ?? "USER",
+    };
   } catch {
     return null;
   }
+}
+
+export async function getCurrentUserId(): Promise<string | null> {
+  const session = await getCurrentSession();
+  return session?.id ?? null;
 }
 
 export async function requireUserId(): Promise<string> {
@@ -59,4 +70,12 @@ export async function requireUserId(): Promise<string> {
     throw new UnauthorizedError();
   }
   return userId;
+}
+
+export async function requireAdminSession(): Promise<SessionUser> {
+  const session = await getCurrentSession();
+  if (!session || session.role !== "ADMIN") {
+    throw new UnauthorizedError();
+  }
+  return session;
 }

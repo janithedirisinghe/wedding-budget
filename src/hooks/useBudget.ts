@@ -28,6 +28,8 @@ type AddExpensePayload = {
 type AddChecklistCategoryPayload = { name: string };
 type AddChecklistItemPayload = { categoryId: string; name: string };
 type AddTimelinePayload = { name: string; date: string; time: string; note?: string };
+type UpdateExpensePayload = { name?: string; amount?: number; projected?: number; date?: string };
+type UpdateTimelinePayload = { name?: string; date?: string; time?: string; note?: string | null };
 
 const fetcher = async <T>(url: string): Promise<T> => {
   const response = await fetch(url);
@@ -110,6 +112,12 @@ export const useBudget = (budgetId?: string) => {
     return expense;
   };
 
+  const updateExpense = async (budgetIdValue: string, expenseId: string, payload: UpdateExpensePayload) => {
+    const expense = await sendJson(`/api/budgets/${budgetIdValue}/expenses/${expenseId}`, payload, "PATCH");
+    await refresh();
+    return expense;
+  };
+
   const addChecklistCategory = async (id: string, payload: AddChecklistCategoryPayload) => {
     const category = await sendJson(`/api/budgets/${id}/checklist/categories`, payload);
     await refresh();
@@ -134,6 +142,12 @@ export const useBudget = (budgetId?: string) => {
     return event;
   };
 
+  const updateTimelineEvent = async (budgetIdValue: string, eventId: string, payload: UpdateTimelinePayload) => {
+    const event = await sendJson(`/api/budgets/${budgetIdValue}/timeline/${eventId}`, payload, "PATCH");
+    await refresh();
+    return event;
+  };
+
   const loading = budgetId ? !budgetData : budgetsLoading && budgets.length === 0;
 
   return {
@@ -144,9 +158,11 @@ export const useBudget = (budgetId?: string) => {
     createBudget,
     addCategory,
     addExpense,
+    updateExpense,
     addChecklistCategory,
     addChecklistItem,
     toggleChecklistItem,
     addTimelineEvent,
+    updateTimelineEvent,
   };
 };

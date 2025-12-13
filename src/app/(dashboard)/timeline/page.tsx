@@ -6,13 +6,34 @@ import { Input } from "@/components/Input";
 import { useBudget } from "@/hooks/useBudget";
 
 export default function TimelinePage() {
-  const { budget, addTimelineEvent, loading } = useBudget();
+  const { budget, addTimelineEvent, updateTimelineEvent, loading } = useBudget();
   const [form, setForm] = useState({ name: "", date: "", time: "", note: "" });
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [editingForm, setEditingForm] = useState({ name: "", date: "", time: "", note: "" });
   const events = [...(budget?.timeline ?? [])].sort((a, b) => {
-    const dateComparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+    const parseDate = (value?: string | null) => {
+      if (!value) return Number.MAX_SAFE_INTEGER;
+      const timestamp = Date.parse(value);
+      return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+    };
+
+    const resolveTime = (value?: string | null) => value ?? "";
+
+    const dateComparison = parseDate(a.date) - parseDate(b.date);
     if (dateComparison !== 0) return dateComparison;
-    return a.time.localeCompare(b.time);
+    return resolveTime(a.time ?? (a as { eventTime?: string }).eventTime).localeCompare(
+      resolveTime(b.time ?? (b as { eventTime?: string }).eventTime),
+    );
   });
+
+  const getEventTime = (event: (typeof events)[number]) => event.time ?? (event as { eventTime?: string }).eventTime ?? "";
+
+  const formatDateLabel = (value?: string) => {
+    if (!value) return "Set date";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Set date";
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  };
 
   if (loading)
     return (
@@ -39,6 +60,28 @@ export default function TimelinePage() {
       note: form.note?.trim() || undefined,
     });
     setForm({ name: "", date: "", time: "", note: "" });
+  };
+
+  const startEditing = (event: (typeof events)[number]) => {
+    setEditingEventId(event.id);
+    setEditingForm({
+      name: event.name,
+      date: event.date ? new Date(event.date).toISOString().slice(0, 10) : "",
+      time: getEventTime(event),
+      note: event.note ?? "",
+    });
+  };
+
+  const handleUpdateEvent = async () => {
+    if (!budget || !editingEventId || !editingForm.name.trim()) return;
+    await updateTimelineEvent(budget.id, editingEventId, {
+      name: editingForm.name.trim(),
+      date: editingForm.date,
+      time: editingForm.time,
+      note: editingForm.note.trim() ? editingForm.note.trim() : null,
+    });
+    setEditingEventId(null);
+    setEditingForm({ name: "", date: "", time: "", note: "" });
   };
 
   return (
@@ -98,16 +141,37 @@ export default function TimelinePage() {
                 <span className="mt-1 h-full w-[2px] bg-rose-100" aria-hidden />
               </div>
               <div className="flex-1 rounded-2xl border border-white/40 bg-white/90 p-4 shadow-sm dark:border-white/10 dark:bg-slate-900/60">
-                <p className="text-sm uppercase tracking-[0.35em] text-amber-600">
-                  {new Date(event.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{event.name}</h2>
-                  <span className="rounded-full bg-rose-100/70 px-3 py-1 text-xs font-medium text-rose-500 dark:bg-rose-500/20 dark:text-rose-100">
-                    {event.time}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.35em] text-amber-600">{formatDateLabel(event.date)}</p>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{event.name}</h2>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-rose-100/70 px-3 py-1 text-xs font-medium text-rose-500 dark:bg-rose-500/20 dark:text-rose-100">
+                      {getEventTime(event) || "--:--"}
+                    </span>
+                    <Button size="sm" variant="outline" onClick={() => startEditing(event)}>
+                      Edit
+                    </Button>
+                  </div>
                 </div>
                 {event.note ? <p className="mt-2 text-sm text-slate-600 dark:text-slate-200">{event.note}</p> : null}
+                {editingEventId === event.id ? (
+                  <div className="mt-4 grid gap-3 md:grid-cols-4">
+                    <Input label="Name" value={editingForm.name} onChange={(e) => setEditingForm((prev) => ({ ...prev, name: e.target.value }))} />
+                    <Input label="Date" type="date" value={editingForm.date} onChange={(e) => setEditingForm((prev) => ({ ...prev, date: e.target.value }))} />
+                    <Input label="Time" type="time" value={editingForm.time} onChange={(e) => setEditingForm((prev) => ({ ...prev, time: e.target.value }))} />
+                    <Input label="Note" value={editingForm.note} onChange={(e) => setEditingForm((prev) => ({ ...prev, note: e.target.value }))} />
+                    <div className="md:col-span-4 flex items-center gap-3">
+                      <Button size="sm" onClick={handleUpdateEvent}>
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingEventId(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </li>
           ))}
