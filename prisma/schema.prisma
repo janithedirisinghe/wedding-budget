@@ -14,10 +14,16 @@ model User {
   partnerName  String?
   email        String?  @unique
   passwordHash String
+  role         UserRole @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   budgets Budget[]
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 model Budget {

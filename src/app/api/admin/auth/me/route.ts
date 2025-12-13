@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handleApiError } from "@/lib/http";
 import { requireUserId } from "@/lib/auth";
+import { handleApiError } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -12,13 +12,12 @@ export async function GET() {
         id: true,
         email: true,
         fullName: true,
-        partnerName: true,
         role: true,
       },
     });
 
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    if (!user || user.role !== "ADMIN") {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json({ user });

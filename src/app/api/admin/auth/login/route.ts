@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { attachAuthCookie, verifyPassword } from "@/lib/auth";
 import { handleApiError, validationError } from "@/lib/http";
 
-const loginSchema = z.object({
+const adminLoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
@@ -12,27 +12,26 @@ const loginSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsed = loginSchema.safeParse(body);
+    const parsed = adminLoginSchema.safeParse(body);
     if (!parsed.success) {
       return validationError(parsed.error.flatten().fieldErrors);
     }
 
-    const userRecord = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-    if (!userRecord) {
+    const adminRecord = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+    if (!adminRecord || adminRecord.role !== "ADMIN") {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    const passwordValid = await verifyPassword(parsed.data.password, userRecord.passwordHash);
+    const passwordValid = await verifyPassword(parsed.data.password, adminRecord.passwordHash);
     if (!passwordValid) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
     const user = {
-      id: userRecord.id,
-      email: userRecord.email,
-      fullName: userRecord.fullName,
-      partnerName: userRecord.partnerName,
-      role: userRecord.role,
+      id: adminRecord.id,
+      email: adminRecord.email,
+      fullName: adminRecord.fullName,
+      role: adminRecord.role,
     };
 
     const response = NextResponse.json({ user });

@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
+import type { UserRole } from "@prisma/client";
 
 const AUTH_COOKIE_NAME = "serenite_session";
 const TOKEN_TTL = "7d";
@@ -8,15 +9,19 @@ const secret = new TextEncoder().encode(rawSecret);
 
 export { AUTH_COOKIE_NAME };
 
-export async function signAuthToken(userId: string) {
-  return new SignJWT({ sub: userId })
+export interface AuthTokenPayload extends JWTPayload {
+  role?: UserRole;
+}
+
+export async function signAuthToken(userId: string, role: UserRole) {
+  return new SignJWT({ sub: userId, role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(TOKEN_TTL)
     .sign(secret);
 }
 
-export async function verifyAuthToken(token: string): Promise<JWTPayload> {
+export async function verifyAuthToken(token: string): Promise<AuthTokenPayload> {
   const { payload } = await jwtVerify(token, secret);
-  return payload;
+  return payload as AuthTokenPayload;
 }

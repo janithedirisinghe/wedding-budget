@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
+import type { UserRole } from "@prisma/client";
 import { AUTH_COOKIE_NAME, signAuthToken, verifyAuthToken } from "@/lib/auth-token";
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -21,8 +22,8 @@ export const hashPassword = (password: string) => bcrypt.hash(password, 12);
 
 export const verifyPassword = (password: string, hash: string) => bcrypt.compare(password, hash);
 
-export async function attachAuthCookie(response: NextResponse, userId: string) {
-  const token = await signAuthToken(userId);
+export async function attachAuthCookie(response: NextResponse, userId: string, role: UserRole) {
+  const token = await signAuthToken(userId, role);
   response.cookies.set({
     name: AUTH_COOKIE_NAME,
     value: token,
