@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { SimpleNavbar } from "@/components/SimpleNavbar";
 import { api } from "@/lib/axios";
 
 const registerSchema = z
@@ -59,7 +60,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-10 rounded-[32px] border border-white/40 bg-white/80 p-10 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60">
+    <>
+      <SimpleNavbar />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-rose-50/70 to-rose-100/40 px-4 py-20 dark:from-slate-950 dark:via-slate-950/70 dark:to-black sm:px-6">
+        <div className="mx-auto max-w-2xl space-y-10 rounded-[32px] border border-white/40 bg-white/80 p-10 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60">
       <div className="space-y-3 text-center">
         <p className="section-heading">Create your space</p>
         <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Register your Serenité account</h1>
@@ -85,6 +89,8 @@ export default function RegisterPage() {
       <p className="text-center text-sm text-slate-600 dark:text-slate-300">
         Already have an account? <Link href="/login" className="text-rose-500">Log in</Link>
       </p>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
