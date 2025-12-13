@@ -6,7 +6,7 @@ import { Input } from "@/components/Input";
 import { useBudget } from "@/hooks/useBudget";
 
 export default function TimelinePage() {
-  const { budget, addTimelineEvent, updateTimelineEvent, loading } = useBudget();
+  const { budget, addTimelineEvent, updateTimelineEvent, deleteTimelineEvent, loading } = useBudget();
   const [form, setForm] = useState({ name: "", date: "", time: "", note: "" });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState({ name: "", date: "", time: "", note: "" });
@@ -152,6 +152,17 @@ export default function TimelinePage() {
                     </span>
                     <Button size="sm" variant="outline" onClick={() => startEditing(event)}>
                       Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        if (!budget) return;
+                        if (!confirm("Delete this timeline event?")) return;
+                        await deleteTimelineEvent(budget.id, event.id);
+                      }}
+                    >
+                      Delete
                     </Button>
                   </div>
                 </div>

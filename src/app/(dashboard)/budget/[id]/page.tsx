@@ -15,7 +15,7 @@ const emptyDraft: Draft = { name: "", projected: "", actual: "", date: "" };
 
 export default function BudgetDetailPage() {
   const params = useParams<{ id: string }>();
-  const { budget, addCategory, addExpense, updateExpense, loading } = useBudget(params?.id);
+  const { budget, addCategory, addExpense, deleteExpense, updateExpense, loading } = useBudget(params?.id);
 
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryForm, setCategoryForm] = useState({ name: "", allocated: "" });
@@ -111,6 +111,16 @@ export default function BudgetDetailPage() {
     setEditingExpenseForm(emptyDraft);
   };
 
+  const handleDeleteExpense = async (expense: Expense) => {
+    if (!budget) return;
+    if (!confirm("Delete this expense?")) return;
+    await deleteExpense(budget.id, expense.id);
+    if (editingExpenseId === expense.id) {
+      setEditingExpenseId(null);
+      setEditingExpenseForm(emptyDraft);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <header className="flex flex-wrap items-center justify-between gap-6">
@@ -182,6 +192,9 @@ export default function BudgetDetailPage() {
                                 {currencyFormatter(expense.amount)}
                                 <Button size="sm" variant="ghost" onClick={() => startEditingExpense(expense)}>
                                   Edit
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => handleDeleteExpense(expense)}>
+                                  Delete
                                 </Button>
                               </div>
                             </td>

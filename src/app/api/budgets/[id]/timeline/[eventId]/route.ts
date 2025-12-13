@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { softDeleteTimelineEvent } from "@/data/budgets";
 import { requireUserId } from "@/lib/auth";
 import { handleApiError } from "@/lib/http";
 
@@ -23,7 +24,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: "Budget not found" }, { status: 404 });
     }
 
-    const timelineEvent = await prisma.timelineEvent.findFirst({ where: { id: eventId, budgetId: id } });
+    const timelineEvent = await prisma.timelineEvent.findFirst({ where: { id: eventId, budgetId: id, deleted: false } });
     if (!timelineEvent) {
       return NextResponse.json({ message: "Timeline event not found" }, { status: 404 });
     }
@@ -44,6 +45,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const updated = await prisma.timelineEvent.update({ where: { id: eventId }, data });
     return NextResponse.json(updated);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function DELETE(_: NextRequest, context: RouteContext) {
+  try {
+    const { id, eventId } = await context.params;
+    const userId = await requireUserId();
+    const budget = await prisma.budget.findFirst({ where: { id, userId, deleted: false }, select: { id: true } });
+    if (!budget) return NextResponse.json({ message: "Budget not found" }, { status: 404 });
+
+    const deleted = await softDeleteTimelineEvent(id, eventId);
+    if (!deleted) return NextResponse.json({ message: "Timeline event not found" }, { status: 404 });
+
+    return NextResponse.json({ message: "Timeline event deleted" });
   } catch (error) {
     return handleApiError(error);
   }

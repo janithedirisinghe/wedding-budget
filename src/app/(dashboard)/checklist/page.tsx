@@ -8,7 +8,7 @@ import { useBudget } from "@/hooks/useBudget";
 import { formatDate } from "@/lib/utils";
 
 export default function ChecklistPage() {
-  const { budget, addChecklistCategory, addChecklistItem, toggleChecklistItem, loading } = useBudget();
+  const { budget, addChecklistCategory, addChecklistItem, toggleChecklistItem, deleteChecklistCategory, deleteChecklistItem, loading } = useBudget();
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -90,6 +90,16 @@ export default function ChecklistPage() {
                       {completed}/{total || 0} items complete
                     </p>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      if (!confirm("Delete this checklist category and its items?")) return;
+                      await deleteChecklistCategory(budget.id, category.id);
+                    }}
+                  >
+                    Delete
+                  </Button>
                 </div>
                 <div className="mt-6 overflow-x-auto">
                   <table className="min-w-full text-left text-sm">
@@ -98,6 +108,7 @@ export default function ChecklistPage() {
                         <th className="pb-3">Item</th>
                         <th className="pb-3">Last update</th>
                         <th className="pb-3 text-right">Status</th>
+                        <th className="pb-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/40 dark:divide-white/10">
@@ -119,11 +130,23 @@ export default function ChecklistPage() {
                                 </span>
                               </label>
                             </td>
+                            <td className="py-3 text-right">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={async () => {
+                                  if (!confirm("Delete this checklist item?")) return;
+                                  await deleteChecklistItem(budget.id, item.id);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={3} className="py-4 text-center text-slate-400">
+                          <td colSpan={4} className="py-4 text-center text-slate-400">
                             No checklist items yet. Add one below.
                           </td>
                         </tr>
