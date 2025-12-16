@@ -1,12 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { useBudget } from "@/hooks/useBudget";
 import { currencyFormatter, formatDate } from "@/lib/utils";
+import type { Expense } from "@/types/expense";
 
 type Draft = { name: string; projected: string; actual: string; date: string };
 
@@ -14,11 +15,13 @@ const emptyDraft: Draft = { name: "", projected: "", actual: "", date: "" };
 
 export default function BudgetDetailPage() {
   const params = useParams<{ id: string }>();
-  const { budget, addCategory, addExpense, loading } = useBudget(params?.id);
+  const { budget, addCategory, addExpense, deleteExpense, updateExpense, loading } = useBudget(params?.id);
 
   const [categoryModal, setCategoryModal] = useState(false);
   const [categoryForm, setCategoryForm] = useState({ name: "", allocated: "" });
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editingExpenseForm, setEditingExpenseForm] = useState<Draft>(emptyDraft);
 
   if (loading)
     return (
@@ -83,6 +86,41 @@ export default function BudgetDetailPage() {
     }));
   };
 
+  const startEditingExpense = (expense: Expense) => {
+    const projectedValue = expense.projected ?? "";
+    const amountValue = expense.amount ?? 0;
+    const parsedDate = expense.date ? new Date(expense.date) : null;
+    setEditingExpenseId(expense.id);
+    setEditingExpenseForm({
+      name: expense.name,
+      projected: projectedValue === "" ? "" : String(projectedValue),
+      actual: String(amountValue),
+      date: parsedDate ? parsedDate.toISOString().slice(0, 10) : "",
+    });
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!editingExpenseId || !budget) return;
+    await updateExpense(budget.id, editingExpenseId, {
+      name: editingExpenseForm.name || undefined,
+      amount: editingExpenseForm.actual ? Number(editingExpenseForm.actual) : undefined,
+      projected: editingExpenseForm.projected ? Number(editingExpenseForm.projected) : undefined,
+      date: editingExpenseForm.date || undefined,
+    });
+    setEditingExpenseId(null);
+    setEditingExpenseForm(emptyDraft);
+  };
+
+  const handleDeleteExpense = async (expense: Expense) => {
+    if (!budget) return;
+    if (!confirm("Delete this expense?")) return;
+    await deleteExpense(budget.id, expense.id);
+    if (editingExpenseId === expense.id) {
+      setEditingExpenseId(null);
+      setEditingExpenseForm(emptyDraft);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <header className="flex flex-wrap items-center justify-between gap-6">
@@ -142,14 +180,68 @@ export default function BudgetDetailPage() {
                   <tbody className="divide-y divide-white/40 dark:divide-white/10">
                     {categoryExpenses.length > 0 ? (
                       categoryExpenses.map((expense) => (
-                        <tr key={expense.id} className="text-slate-700 dark:text-slate-200">
-                          <td className="py-3 font-semibold">{expense.name}</td>
-                          <td className="py-3 text-slate-500">{expense.date ? formatDate(expense.date) : "-"}</td>
-                          <td className="py-3 text-right text-slate-500">
-                            {expense.projected ? currencyFormatter(expense.projected) : "-"}
-                          </td>
-                          <td className="py-3 text-right font-semibold text-rose-500">{currencyFormatter(expense.amount)}</td>
-                        </tr>
+                        <Fragment key={expense.id}>
+                          <tr className="text-slate-700 dark:text-slate-200">
+                            <td className="py-3 font-semibold">{expense.name}</td>
+                            <td className="py-3 text-slate-500">{expense.date ? formatDate(expense.date) : "-"}</td>
+                            <td className="py-3 text-right text-slate-500">
+                              {expense.projected ? currencyFormatter(expense.projected) : "-"}
+                            </td>
+                            <td className="py-3 text-right font-semibold text-rose-500">
+                              <div className="flex items-center justify-end gap-3">
+                                {currencyFormatter(expense.amount)}
+                                <Button size="sm" variant="ghost" onClick={() => startEditingExpense(expense)}>
+                                  Edit
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => handleDeleteExpense(expense)}>
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                          {editingExpenseId === expense.id ? (
+                            <tr>
+                              <td colSpan={4} className="py-4">
+                                <div className="grid gap-3 md:grid-cols-4">
+                                  <input
+                                    value={editingExpenseForm.name}
+                                    onChange={(event) => setEditingExpenseForm((prev) => ({ ...prev, name: event.target.value }))}
+                                    placeholder="Item name"
+                                    className="rounded-2xl border border-rose-100/60 bg-white/80 px-3 py-2 text-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100 dark:border-white/10 dark:bg-slate-900/40"
+                                  />
+                                  <input
+                                    type="date"
+                                    value={editingExpenseForm.date}
+                                    onChange={(event) => setEditingExpenseForm((prev) => ({ ...prev, date: event.target.value }))}
+                                    className="rounded-2xl border border-rose-100/60 bg-white/80 px-3 py-2 text-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100 dark:border-white/10 dark:bg-slate-900/40"
+                                  />
+                                  <input
+                                    type="number"
+                                    placeholder="Projected"
+                                    value={editingExpenseForm.projected}
+                                    onChange={(event) => setEditingExpenseForm((prev) => ({ ...prev, projected: event.target.value }))}
+                                    className="rounded-2xl border border-rose-100/60 bg-white/80 px-3 py-2 text-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100 dark:border-white/10 dark:bg-slate-900/40"
+                                  />
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      placeholder="Actual"
+                                      value={editingExpenseForm.actual}
+                                      onChange={(event) => setEditingExpenseForm((prev) => ({ ...prev, actual: event.target.value }))}
+                                      className="w-full rounded-2xl border border-rose-100/60 bg-white/80 px-3 py-2 text-right text-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100 dark:border-white/10 dark:bg-slate-900/40"
+                                    />
+                                    <Button size="sm" onClick={handleUpdateExpense}>
+                                      Save
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingExpenseId(null)}>
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
                       ))
                     ) : (
                       <tr>

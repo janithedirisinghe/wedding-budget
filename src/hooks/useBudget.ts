@@ -28,6 +28,8 @@ type AddExpensePayload = {
 type AddChecklistCategoryPayload = { name: string };
 type AddChecklistItemPayload = { categoryId: string; name: string };
 type AddTimelinePayload = { name: string; date: string; time: string; note?: string };
+type UpdateExpensePayload = { name?: string; amount?: number; projected?: number; date?: string };
+type UpdateTimelinePayload = { name?: string; date?: string; time?: string; note?: string | null };
 
 const fetcher = async <T>(url: string): Promise<T> => {
   const response = await fetch(url);
@@ -45,6 +47,12 @@ const sendJson = async <T>(url: string, body: unknown, method: "POST" | "PATCH" 
   });
   if (!response.ok) throw new Error(await response.text());
   return response.json() as Promise<T>;
+};
+
+const sendDelete = async (url: string) => {
+  const response = await fetch(url, { method: "DELETE" });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
 };
 
 export const useBudget = (budgetId?: string) => {
@@ -98,6 +106,11 @@ export const useBudget = (budgetId?: string) => {
     return budget;
   };
 
+  const deleteBudget = async (id: string) => {
+    await sendDelete(`/api/budgets/${id}`);
+    await refresh();
+  };
+
   const addCategory = async (id: string, payload: AddCategoryPayload) => {
     const category = await sendJson(`/api/budgets/${id}/categories`, payload);
     await refresh();
@@ -110,10 +123,26 @@ export const useBudget = (budgetId?: string) => {
     return expense;
   };
 
+  const deleteExpense = async (budgetIdValue: string, expenseId: string) => {
+    await sendDelete(`/api/budgets/${budgetIdValue}/expenses/${expenseId}`);
+    await refresh();
+  };
+
+  const updateExpense = async (budgetIdValue: string, expenseId: string, payload: UpdateExpensePayload) => {
+    const expense = await sendJson(`/api/budgets/${budgetIdValue}/expenses/${expenseId}`, payload, "PATCH");
+    await refresh();
+    return expense;
+  };
+
   const addChecklistCategory = async (id: string, payload: AddChecklistCategoryPayload) => {
     const category = await sendJson(`/api/budgets/${id}/checklist/categories`, payload);
     await refresh();
     return category;
+  };
+
+  const deleteChecklistCategory = async (budgetIdValue: string, categoryId: string) => {
+    await sendDelete(`/api/budgets/${budgetIdValue}/checklist/categories/${categoryId}`);
+    await refresh();
   };
 
   const addChecklistItem = async (id: string, payload: AddChecklistItemPayload) => {
@@ -128,8 +157,24 @@ export const useBudget = (budgetId?: string) => {
     return item;
   };
 
+  const deleteChecklistItem = async (budgetIdValue: string, itemId: string) => {
+    await sendDelete(`/api/budgets/${budgetIdValue}/checklist/items/${itemId}`);
+    await refresh();
+  };
+
   const addTimelineEvent = async (id: string, payload: AddTimelinePayload) => {
     const event = await sendJson(`/api/budgets/${id}/timeline`, payload);
+    await refresh();
+    return event;
+  };
+
+  const deleteTimelineEvent = async (budgetIdValue: string, eventId: string) => {
+    await sendDelete(`/api/budgets/${budgetIdValue}/timeline/${eventId}`);
+    await refresh();
+  };
+
+  const updateTimelineEvent = async (budgetIdValue: string, eventId: string, payload: UpdateTimelinePayload) => {
+    const event = await sendJson(`/api/budgets/${budgetIdValue}/timeline/${eventId}`, payload, "PATCH");
     await refresh();
     return event;
   };
@@ -142,11 +187,18 @@ export const useBudget = (budgetId?: string) => {
     totals,
     loading,
     createBudget,
+    deleteBudget,
     addCategory,
     addExpense,
+    deleteExpense,
+    updateExpense,
     addChecklistCategory,
+    deleteChecklistCategory,
     addChecklistItem,
+    deleteChecklistItem,
     toggleChecklistItem,
     addTimelineEvent,
+    deleteTimelineEvent,
+    updateTimelineEvent,
   };
 };

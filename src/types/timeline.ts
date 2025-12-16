@@ -3,6 +3,7 @@ export interface TimelineEvent {
   budgetId: string;
   name: string;
   date: string;
-  time: string;
+  time?: string;
+  eventTime?: string;
   note?: string;
 }

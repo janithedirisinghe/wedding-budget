@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface ThemeToggleProps {
   className?: string;
@@ -10,9 +11,12 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const mode = resolvedTheme ?? theme;
 
-  if (!mode) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isDark = mode === "dark";
 
@@ -25,8 +29,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         className,
       )}
       aria-label="Toggle theme"
+      disabled={!mounted}
     >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      {mounted ? (
+        isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />
+      ) : (
+        <Sun className="h-5 w-5" />
+      )}
     </button>
   );
 }

@@ -13,6 +13,7 @@ export async function GET() {
         email: true,
         fullName: true,
         partnerName: true,
+        role: true,
       },
     });
 

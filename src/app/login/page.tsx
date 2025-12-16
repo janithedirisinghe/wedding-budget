@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { SimpleNavbar } from "@/components/SimpleNavbar";
 import { api } from "@/lib/axios";
 
 const loginSchema = z.object({
@@ -43,7 +44,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-10 rounded-[32px] border border-white/40 bg-white/90 p-10 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+    <>
+      <SimpleNavbar />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white via-rose-50/70 to-rose-100/40 px-4 py-20 dark:from-slate-950 dark:via-slate-950/70 dark:to-black sm:px-6">
+        <div className="mx-auto max-w-md space-y-10 rounded-[32px] border border-white/40 bg-white/90 p-10 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
       <div className="space-y-3 text-center">
         <p className="section-heading">Welcome back</p>
         <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Log in to your dashboard</h1>
@@ -60,6 +64,8 @@ export default function LoginPage() {
       <p className="text-center text-sm text-slate-600 dark:text-slate-300">
         New here? <Link href="/register" className="text-rose-500">Create an account</Link>
       </p>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

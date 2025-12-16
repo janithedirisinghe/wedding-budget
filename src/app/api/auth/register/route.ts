@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { attachAuthCookie, hashPassword } from "@/lib/auth";
 import { handleApiError, validationError } from "@/lib/http";
+import { generateUniqueUsername } from "@/lib/username";
 
 const registerSchema = z.object({
   fullName: z.string().min(2),
@@ -10,24 +11,6 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
-
-function buildBaseUsername(fullName: string) {
-  const normalized = fullName.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return normalized || `user${Math.floor(Math.random() * 10000)}`;
-}
-
-async function generateUniqueUsername(fullName: string) {
-  const base = buildBaseUsername(fullName);
-  let candidate = base;
-  let counter = 1;
-
-  while (await prisma.user.findUnique({ where: { username: candidate } })) {
-    candidate = `${base}${counter}`;
-    counter += 1;
-  }
-
-  return candidate;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,17 +35,19 @@ export async function POST(request: NextRequest) {
         fullName: parsed.data.fullName,
         partnerName: parsed.data.partnerName,
         passwordHash,
+        role: "USER",
       },
       select: {
         id: true,
         email: true,
         fullName: true,
         partnerName: true,
+        role: true,
       },
     });
 
     const response = NextResponse.json({ user }, { status: 201 });
-    await attachAuthCookie(response, user.id);
+    await attachAuthCookie(response, user.id, user.role);
     return response;
   } catch (error) {
     return handleApiError(error);

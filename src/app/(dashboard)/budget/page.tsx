@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { currencyFormatter, formatDate } from "@/lib/utils";
 
 export default function BudgetListPage() {
-  const { budgets, loading } = useBudget();
+  const { budgets, loading, deleteBudget } = useBudget();
 
   return (
     <div className="space-y-10">
@@ -31,7 +31,19 @@ export default function BudgetListPage() {
                 <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{budget.name}</h3>
                 <p className="text-sm text-slate-500">{budget.coupleNames}</p>
               </div>
-              <span className="text-xl font-semibold text-rose-500">{currencyFormatter(budget.total)}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-semibold text-rose-500">{currencyFormatter(budget.total)}</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={async () => {
+                    if (!confirm("Delete this budget? You can restore later since it won't be permanently removed.")) return;
+                    await deleteBudget(budget.id);
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
             <div className="flex items-center justify-between text-sm text-slate-500">
               <span>{budget.categories.length} categories</span>

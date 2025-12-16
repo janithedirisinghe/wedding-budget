@@ -32,10 +32,11 @@ export async function POST(request: NextRequest) {
       email: userRecord.email,
       fullName: userRecord.fullName,
       partnerName: userRecord.partnerName,
+      role: userRecord.role,
     };
 
     const response = NextResponse.json({ user });
-    await attachAuthCookie(response, user.id);
+    await attachAuthCookie(response, user.id, user.role);
     return response;
   } catch (error) {
     return handleApiError(error);
