@@ -1,5 +1,6 @@
 import type { Category } from "./category";
 import type { ChecklistCategory } from "./checklist";
+import type { Currency } from "./currency";
 import type { Expense } from "./expense";
 import type { TimelineEvent } from "./timeline";
 
@@ -15,4 +16,5 @@ export interface Budget {
   timeline: TimelineEvent[];
   createdAt: string;
   notes?: string;
+  currency?: Currency | null;
 }

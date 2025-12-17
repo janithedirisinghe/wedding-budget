@@ -18,6 +18,9 @@ const adminUserInclude = {
       timeline: true,
     },
   },
+  currency: {
+    select: { id: true, code: true, name: true, symbol: true },
+  },
 };
 
 const updateSchema = z.object({
@@ -27,6 +30,7 @@ const updateSchema = z.object({
   password: z.string().min(6).optional(),
   role: z.enum(["USER", "ADMIN"]).optional(),
   username: z.string().min(2).optional(),
+  currencyId: z.string().optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> | { id: string } };
@@ -66,6 +70,18 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsed.data.username !== undefined) data.username = parsed.data.username;
     if (parsed.data.password) {
       data.passwordHash = await hashPassword(parsed.data.password);
+    }
+
+    if (parsed.data.currencyId !== undefined) {
+      if (parsed.data.currencyId === null) {
+        data.currency = { disconnect: true };
+      } else {
+        const currencyExists = await prisma.currency.findUnique({ where: { id: parsed.data.currencyId } });
+        if (!currencyExists) {
+          return NextResponse.json({ message: "Currency not found" }, { status: 404 });
+        }
+        data.currency = { connect: { id: parsed.data.currencyId } };
+      }
     }
 
     const user = await prisma.user.update({

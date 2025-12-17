@@ -18,6 +18,9 @@ const adminUserInclude = {
       timeline: true,
     },
   },
+  currency: {
+    select: { id: true, code: true, name: true, symbol: true },
+  },
 };
 
 const createUserSchema = z.object({
@@ -26,6 +29,7 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   role: z.enum(["USER", "ADMIN"]).optional(),
+  currencyId: z.string().optional(),
 });
 
 export async function GET() {
@@ -53,6 +57,13 @@ export async function POST(request: Request) {
     const username = await generateUniqueUsername(parsed.data.fullName);
     const passwordHash = await hashPassword(parsed.data.password);
 
+    if (parsed.data.currencyId) {
+      const currencyExists = await prisma.currency.findUnique({ where: { id: parsed.data.currencyId } });
+      if (!currencyExists) {
+        return NextResponse.json({ message: "Currency not found" }, { status: 404 });
+      }
+    }
+
     const user = await prisma.user.create({
       data: {
         username,
@@ -61,6 +72,7 @@ export async function POST(request: Request) {
         partnerName: parsed.data.partnerName,
         passwordHash,
         role: parsed.data.role ?? "USER",
+        currencyId: parsed.data.currencyId,
       },
       include: adminUserInclude,
     });

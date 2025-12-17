@@ -13,6 +13,7 @@ const navLinks = [
   { label: "Budget Defaults", href: "/admin/defaults/budget" },
   { label: "Checklist", href: "/admin/defaults/checklist" },
   { label: "Timeline", href: "/admin/defaults/timeline" },
+  { label: "Currencies", href: "/admin/currencies" },
 ];
 
 export default function AdminShell({ adminName, children }: { adminName: string; children: ReactNode }) {

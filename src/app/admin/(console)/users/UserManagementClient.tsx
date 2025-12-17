@@ -6,6 +6,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { cn } from "@/lib/utils";
 import { AdminUser, fetcher, selectClasses, sendJson } from "../components/admin-shared";
+import type { Currency } from "@/types/currency";
 
 const PAGE_SIZE = 6;
 
@@ -16,12 +17,18 @@ export default function UserManagementClient() {
     mutate: mutateUsers,
   } = useSWR<{ users: AdminUser[] }>("/api/admin/users", (url: string) => fetcher<{ users: AdminUser[] }>(url));
 
+  const { data: currenciesData } = useSWR<{ currencies: Currency[] }>(
+    "/api/admin/currencies",
+    (url: string) => fetcher<{ currencies: Currency[] }>(url),
+  );
+
   const [newUserForm, setNewUserForm] = useState({
     fullName: "",
     partnerName: "",
     email: "",
     password: "",
     role: "USER" as "USER" | "ADMIN",
+    currencyId: "",
   });
   const [userFormError, setUserFormError] = useState<string | null>(null);
   const [creatingUser, setCreatingUser] = useState(false);
@@ -30,6 +37,7 @@ export default function UserManagementClient() {
   const [search, setSearch] = useState("");
 
   const users = useMemo(() => usersData?.users ?? [], [usersData]);
+  const currencies = currenciesData?.currencies ?? [];
   const totalBudgets = useMemo(() => users.reduce((sum, user) => sum + user.budgets.length, 0), [users]);
 
   const filteredUsers = useMemo(() => {
@@ -56,7 +64,7 @@ export default function UserManagementClient() {
     setUserFormError(null);
     try {
       await sendJson("/api/admin/users", newUserForm);
-      setNewUserForm({ fullName: "", partnerName: "", email: "", password: "", role: "USER" });
+      setNewUserForm({ fullName: "", partnerName: "", email: "", password: "", role: "USER", currencyId: "" });
       await mutateUsers();
     } catch (error) {
       console.error(error);
@@ -147,6 +155,21 @@ export default function UserManagementClient() {
               <option value="ADMIN">Admin</option>
             </select>
           </label>
+          <label className="flex flex-col gap-2 text-sm text-slate-700 dark:text-slate-200">
+            <span className="font-medium">Currency</span>
+            <select
+              className={selectClasses}
+              value={newUserForm.currencyId}
+              onChange={(event) => setNewUserForm((prev) => ({ ...prev, currencyId: event.target.value }))}
+            >
+              <option value="">Default (USD)</option>
+              {currencies.map((currency) => (
+                <option key={currency.id} value={currency.id}>
+                  {currency.code} — {currency.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="md:col-span-2 flex items-center gap-4">
             <Button type="submit" loading={creatingUser}>
               Create account
@@ -185,7 +208,13 @@ export default function UserManagementClient() {
                 </tr>
               ) : (
                 pagedUsers.map((user) => (
-                  <UserRow key={user.id} user={user} onUpdate={handleUpdateUser} onDelete={handleDeleteUser} />
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    currencies={currencies}
+                    onUpdate={handleUpdateUser}
+                    onDelete={handleDeleteUser}
+                  />
                 ))
               )}
             </tbody>
@@ -198,7 +227,13 @@ export default function UserManagementClient() {
               </p>
             ) : (
               pagedUsers.map((user) => (
-                <UserCardMobile key={user.id} user={user} onUpdate={handleUpdateUser} onDelete={handleDeleteUser} />
+                <UserCardMobile
+                  key={user.id}
+                  user={user}
+                  currencies={currencies}
+                  onUpdate={handleUpdateUser}
+                  onDelete={handleDeleteUser}
+                />
               ))
             )}
           </div>
@@ -243,10 +278,12 @@ function PaginationControls({
 
 function UserRow({
   user,
+  currencies,
   onUpdate,
   onDelete,
 }: {
   user: AdminUser;
+  currencies: Currency[];
   onUpdate: (userId: string, payload: Record<string, unknown>) => Promise<void>;
   onDelete: (userId: string) => Promise<void>;
 }) {
@@ -259,6 +296,7 @@ function UserRow({
     username: user.username,
     role: user.role,
     password: "",
+    currencyId: user.currency?.id ?? "",
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -277,6 +315,7 @@ function UserRow({
       if (form.password) {
         payload.password = form.password;
       }
+      payload.currencyId = form.currencyId || null;
       await onUpdate(user.id, payload);
       setForm((prev) => ({ ...prev, password: "" }));
       setEditing(false);
@@ -365,10 +404,12 @@ function UserRow({
 
 function UserCardMobile({
   user,
+  currencies,
   onUpdate,
   onDelete,
 }: {
   user: AdminUser;
+  currencies: Currency[];
   onUpdate: (userId: string, payload: Record<string, unknown>) => Promise<void>;
   onDelete: (userId: string) => Promise<void>;
 }) {
@@ -381,6 +422,7 @@ function UserCardMobile({
     username: user.username,
     role: user.role,
     password: "",
+    currencyId: user.currency?.id ?? "",
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -399,6 +441,7 @@ function UserCardMobile({
       if (form.password) {
         payload.password = form.password;
       }
+      payload.currencyId = form.currencyId || null;
       await onUpdate(user.id, payload);
       setForm((prev) => ({ ...prev, password: "" }));
       setEditing(false);
@@ -464,6 +507,36 @@ function UserCardMobile({
             >
               <option value="USER">User</option>
               <option value="ADMIN">Admin</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-2 text-sm text-slate-700 dark:text-slate-200">
+            <span className="font-medium">Currency</span>
+            <select
+              className={selectClasses}
+              value={form.currencyId}
+              onChange={(event) => setForm((prev) => ({ ...prev, currencyId: event.target.value }))}
+            >
+              <option value="">Default (USD)</option>
+              {currencies.map((currency) => (
+                <option key={currency.id} value={currency.id}>
+                  {currency.code} — {currency.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-2 text-sm text-slate-700 dark:text-slate-200">
+            <span className="font-medium">Currency</span>
+            <select
+              className={selectClasses}
+              value={form.currencyId}
+              onChange={(event) => setForm((prev) => ({ ...prev, currencyId: event.target.value }))}
+            >
+              <option value="">Default (USD)</option>
+              {currencies.map((currency) => (
+                <option key={currency.id} value={currency.id}>
+                  {currency.code} — {currency.name}
+                </option>
+              ))}
             </select>
           </label>
           <Input

@@ -17,21 +17,33 @@ const budgetInclude = {
   timeline: {
     where: { deleted: false },
   },
+  user: {
+    select: {
+      currency: { select: { id: true, code: true, name: true, symbol: true } },
+    },
+  },
 };
 
 export async function getBudgetsForUser(userId: string) {
-  return prisma.budget.findMany({
+  const budgets = await prisma.budget.findMany({
     where: { userId, deleted: false },
     include: budgetInclude,
     orderBy: { createdAt: "desc" },
   });
+  return budgets.map((budget) => {
+    const { user, ...rest } = budget;
+    return { ...rest, currency: user?.currency };
+  });
 }
 
 export async function getBudgetById(userId: string, budgetId: string) {
-  return prisma.budget.findFirst({
+  const budget = await prisma.budget.findFirst({
     where: { id: budgetId, userId, deleted: false },
     include: budgetInclude,
   });
+  if (!budget) return null;
+  const { user, ...rest } = budget;
+  return { ...rest, currency: user?.currency };
 }
 
 interface CreateBudgetInput {
@@ -76,7 +88,9 @@ export async function createBudget(input: CreateBudgetInput) {
   await syncBudgetDefaults(created.id);
 
   const refreshed = await prisma.budget.findUnique({ where: { id: created.id }, include: budgetInclude });
-  return refreshed!;
+  if (!refreshed) return null;
+  const { user, ...rest } = refreshed;
+  return { ...rest, currency: user?.currency };
 }
 
 export async function addCategory(budgetId: string, name: string, allocated: number, color?: string) {

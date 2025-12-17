@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { api } from "@/lib/axios";
+import type { Currency } from "@/types/currency";
 
 export default function ProfilePage() {
   const [message, setMessage] = useState<string | null>(null);
-  const [profile, setProfile] = useState({ fullName: "", partnerName: "", email: "" });
+  const [profile, setProfile] = useState({ fullName: "", partnerName: "", email: "", currencyId: "" });
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -16,12 +18,17 @@ export default function ProfilePage() {
     let active = true;
     (async () => {
       try {
-        const { data } = await api.get("/auth/me");
+        const [{ data: me }, { data: currencyResponse }] = await Promise.all([
+          api.get("/auth/me"),
+          api.get("/currencies"),
+        ]);
         if (!active) return;
+        setCurrencies(currencyResponse.currencies ?? []);
         setProfile({
-          fullName: data.user.fullName ?? "",
-          partnerName: data.user.partnerName ?? "",
-          email: data.user.email ?? "",
+          fullName: me.user.fullName ?? "",
+          partnerName: me.user.partnerName ?? "",
+          email: me.user.email ?? "",
+          currencyId: me.user.currency?.id ?? "",
         });
       } catch {
         if (!active) return;
@@ -40,6 +47,32 @@ export default function ProfilePage() {
     await api.post("/auth/logout");
     router.replace("/login");
     router.refresh();
+  };
+
+  const handleSave = async () => {
+    setMessage(null);
+    try {
+      const { data } = await api.patch("/auth/me", {
+        fullName: profile.fullName || undefined,
+        partnerName: profile.partnerName || undefined,
+        currencyId: profile.currencyId || undefined,
+      });
+      setMessage("Preferences saved");
+      try {
+        localStorage.setItem("app:currencyCode", data.user.currency?.code ?? "USD");
+        if (data.user.currency?.symbol) {
+          localStorage.setItem("app:currencySymbol", data.user.currency.symbol);
+        }
+        window.__appCurrencyCode = data.user.currency?.code;
+        window.__appCurrencySymbol = data.user.currency?.symbol ?? null;
+      } catch {
+        /* ignore */
+      }
+      setTimeout(() => setMessage(null), 2500);
+    } catch (error) {
+      console.error(error);
+      setMessage("Unable to save preferences");
+    }
   };
 
   return (
@@ -76,6 +109,25 @@ export default function ProfilePage() {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Preferences</h2>
             <p className="text-sm text-slate-500">Adjust notifications and export defaults.</p>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-2 text-sm text-slate-700 dark:text-slate-200">
+              <span className="font-medium">Currency</span>
+              <select
+                className="rounded-2xl border border-rose-100/70 bg-white/80 px-4 py-3 text-base text-slate-900 shadow-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100 dark:border-white/10 dark:bg-slate-900/40 dark:text-white"
+                value={profile.currencyId}
+                onChange={(event) => setProfile((prev) => ({ ...prev, currencyId: event.target.value }))}
+                disabled={loading}
+              >
+                <option value="">Default (USD)</option>
+                {currencies.map((currency) => (
+                  <option key={currency.id} value={currency.id}>
+                    {currency.code} — {currency.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-slate-500">Amounts in the app will use this currency.</span>
+            </label>
+          </div>
           <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
             <input type="checkbox" defaultChecked className="h-5 w-5 rounded-lg border border-rose-200 text-rose-500 focus:ring-rose-300" />
             Receive weekly digest
@@ -86,14 +138,8 @@ export default function ProfilePage() {
           </label>
         </section>
         <div className="flex flex-wrap gap-3">
-          <Button
-            disabled={loading}
-            onClick={() => {
-              setMessage("Profile updated (coming soon)");
-              setTimeout(() => setMessage(null), 2500);
-            }}
-          >
-          Save changes
+          <Button disabled={loading} onClick={handleSave}>
+            Save changes
           </Button>
           <Button type="button" variant="ghost" onClick={handleLogout}>
             Log out

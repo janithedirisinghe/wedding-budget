@@ -1,4 +1,5 @@
 import type { Budget } from "@/types/budget";
+import type { Currency } from "@/types/currency";
 
 export type AdminUser = {
   id: string;
@@ -8,6 +9,7 @@ export type AdminUser = {
   email: string | null;
   role: "USER" | "ADMIN";
   budgets: Budget[];
+  currency?: Currency | null;
 };
 
 export type DefaultBudgetCategory = {

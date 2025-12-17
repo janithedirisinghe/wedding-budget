@@ -15,9 +15,11 @@ model User {
   email        String?  @unique
   passwordHash String
   role         UserRole @default(USER)
+  currencyId   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  currency Currency? @relation(fields: [currencyId], references: [id])
   budgets Budget[]
 }
 
@@ -75,6 +77,17 @@ model DefaultTimelineEvent {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Currency {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  symbol    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
 }
 
 model Budget {
