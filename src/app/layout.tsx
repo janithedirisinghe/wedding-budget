@@ -11,6 +11,13 @@ export const metadata: Metadata = {
   title: "Serenité | Wedding Budget Planner",
   description:
     "Plan, visualize, and celebrate your wedding budget with an elegant dashboard that tracks categories, expenses, and savings in real time.",
+  icons: {
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/logo.png", rel: "shortcut icon" },
+    ],
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
