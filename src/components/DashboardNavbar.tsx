@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Heart, Menu, X, User, CheckSquare, Clock, CreditCard, Home, Settings, LogOut } from "lucide-react";
+import { Menu, X, User, CheckSquare, Clock, CreditCard, Home, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/axios";
 
@@ -52,8 +53,8 @@ export function DashboardNavbar() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-amber-300 text-white shadow-md">
-            <Heart className="h-5 w-5" />
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white shadow-md dark:bg-slate-800">
+            <Image src="/logo.png" alt="Serenité logo" width={40} height={40} className="h-10 w-10 object-contain" />
           </span>
           <div className="hidden leading-tight sm:block">
             <p className="text-sm uppercase tracking-[0.4em] text-amber-600 dark:text-amber-300">Serenité</p>
